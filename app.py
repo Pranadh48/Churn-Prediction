@@ -44,9 +44,18 @@ def predict():
     prob = model.predict_proba(df_scaled)[:,1][0]
     prediction = int(prob > threshold)
 
+    # Calculate feature contributions
+    coefs = model.coef_[0]
+    contributions = df_processed.iloc[0] * coefs
+
+    top_positive = contributions.sort_values(ascending=False).head(3)
+    top_negative = contributions.sort_values().head(3)
+
     return jsonify({
         "churn_probability": round(float(prob), 3),
-        "churn_prediction": prediction
+        "churn_prediction": prediction,
+        "top_positive_factors": top_positive.to_dict(),
+        "top_negative_factors": top_negative.to_dict()
     })
 
 
