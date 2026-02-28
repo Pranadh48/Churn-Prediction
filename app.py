@@ -46,7 +46,8 @@ def predict():
 
     # Calculate feature contributions
     coefs = model.coef_[0]
-    contributions = df_processed.iloc[0] * coefs
+    scaled_values = df_scaled[0]
+    contributions = scaled_values * coefs
 
     top_positive = contributions.sort_values(ascending=False).head(3)
     top_negative = contributions.sort_values().head(3)
