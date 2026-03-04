@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import plotly.graph_objects as go
+import pandas as pd
+import plotly.express as px
 
 API_URL = "https://churn-prediction-api-kfa4.onrender.com/predict"
 
@@ -72,25 +74,36 @@ with col2:
         if response.status_code == 200:
             result = response.json()
             
+            
+
             top_pos = result["top_positive_factors"]
             top_neg = result["top_negative_factors"]
 
-            st.write("### 🔍 Why this prediction?")
+            # Combine factors into dataframe
+            factors = {**top_pos, **top_neg}
 
-            col1, col2 = st.columns(2)
+            df = pd.DataFrame({
+                "Feature": list(factors.keys()),
+                "Contribution": list(factors.values())
+            })
 
-            with col1:
-                st.subheader("⚠️ Factors Increasing Churn Risk")
-                for feature in top_pos:
-                    nice_name = feature.replace("_"," ")
-                    st.write(f"• {nice_name}")
+            df["Impact"] = df["Contribution"].apply(lambda x: "Increase Churn" if x > 0 else "Reduce Churn")
+               
+            fig = px.bar(
+            df,
+            x="Contribution",
+            y="Feature",
+            orientation="h",
+            color="Impact",
+            color_discrete_map={
+                "Increase Churn": "red",
+                "Reduce Churn": "green"
+            },
+            title="Feature Contribution to Prediction"
+            )
 
-            with col2:
-                st.subheader("🛡 Factors Reducing Churn Risk")
-                for feature in top_neg:
-                    nice_name = feature.replace("_"," ")
-                    st.write(f"• {nice_name}")
-            
+            st.plotly_chart(fig, use_container_width=True)
+                     
             probability = result["churn_probability"]
             prediction = result["churn_prediction"]
             prob_percent = round(probability * 100, 2)
@@ -125,3 +138,28 @@ with col2:
             st.write("#### 🛡 Factors Reducing Churn Risk")
             for feature, value in top_neg.items():
                 st.write(f"- {feature}")
+                
+            st.write("### 📊 Business Recommendation")
+
+            if prediction == 1:
+                
+                if probability > 0.8:
+                    st.error("🚨 Critical Risk: Immediate retention action required.")
+                    st.write("Suggested actions:")
+                    st.write("- Offer loyalty discount")
+                    st.write("- Assign dedicated customer support")
+                    st.write("- Offer contract upgrade incentives")
+
+                elif probability > 0.5:
+                    st.warning("⚠️ Medium Risk: Customer may churn.")
+                    st.write("Suggested actions:")
+                    st.write("- Provide promotional offers")
+                    st.write("- Improve service support")
+                    st.write("- Offer bundled services")
+
+            else:
+                st.success("✅ Customer appears stable.")
+                st.write("Suggested actions:")
+                st.write("- Maintain engagement")
+                st.write("- Provide loyalty rewards")
+                st.write("- Encourage long-term contract renewal")
