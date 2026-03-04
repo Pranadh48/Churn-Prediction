@@ -3,7 +3,7 @@ pandas
 numpy
 scikit-learn==1.6.1
 gunicorn
-streamlit
+streamlit==1.29.0
 requests
 plotly
-
+altair==4.2.2
