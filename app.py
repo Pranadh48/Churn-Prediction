@@ -47,19 +47,21 @@ def predict():
     # Calculate feature contributions correctly
     coefs = model.coef_[0]
 
-    # Convert scaled row to pandas series with column names
     scaled_row = pd.Series(df_scaled[0], index=model_columns)
 
     contributions = scaled_row * coefs
 
-    top_positive = contributions.sort_values(ascending=False).head(3)
-    top_negative = contributions.sort_values().head(3)
+    # features increasing churn
+    positive_contrib = contributions[contributions > 0].sort_values(ascending=False).head(3)
+
+    # features reducing churn
+    negative_contrib = contributions[contributions < 0].sort_values().head(3)
 
     return jsonify({
-        "churn_probability": round(float(prob), 3),
+        "churn_probability": round(float(prob),3),
         "churn_prediction": prediction,
-        "top_positive_factors": top_positive.to_dict(),
-        "top_negative_factors": top_negative.to_dict()
+        "top_positive_factors": positive_contrib.to_dict(),
+        "top_negative_factors": negative_contrib.to_dict()
     })
 
 

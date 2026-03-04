@@ -71,6 +71,26 @@ with col2:
 
         if response.status_code == 200:
             result = response.json()
+            
+            top_pos = result["top_positive_factors"]
+            top_neg = result["top_negative_factors"]
+
+            st.write("### 🔍 Why this prediction?")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.subheader("⚠️ Factors Increasing Churn Risk")
+                for feature in top_pos:
+                    nice_name = feature.replace("_"," ")
+                    st.write(f"• {nice_name}")
+
+            with col2:
+                st.subheader("🛡 Factors Reducing Churn Risk")
+                for feature in top_neg:
+                    nice_name = feature.replace("_"," ")
+                    st.write(f"• {nice_name}")
+            
             probability = result["churn_probability"]
             prediction = result["churn_prediction"]
             prob_percent = round(probability * 100, 2)
