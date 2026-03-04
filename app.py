@@ -44,10 +44,13 @@ def predict():
     prob = model.predict_proba(df_scaled)[:,1][0]
     prediction = int(prob > threshold)
 
-    # Calculate feature contributions
+    # Calculate feature contributions correctly
     coefs = model.coef_[0]
-    scaled_values = df_scaled[0]
-    contributions = scaled_values * coefs
+
+    # Convert scaled row to pandas series with column names
+    scaled_row = pd.Series(df_scaled[0], index=model_columns)
+
+    contributions = scaled_row * coefs
 
     top_positive = contributions.sort_values(ascending=False).head(3)
     top_negative = contributions.sort_values().head(3)
